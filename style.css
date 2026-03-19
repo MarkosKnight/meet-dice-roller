@@ -1,0 +1,240 @@
+/* style.css - Shared styles for Meet Dice Roller add-on */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-size: 14px;
+}
+
+#app {
+  padding: 16px;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 12px;
+}
+
+.dice-icon { font-size: 28px; }
+
+h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Roll section */
+.roll-section { margin-bottom: 16px; }
+
+label {
+  display: block;
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input[type=text] {
+  width: 100%;
+  padding: 10px 12px;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 16px;
+  font-family: monospace;
+  margin-bottom: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input[type=text]:focus { border-color: #e94560; }
+
+.hint {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.hint strong { color: #e94560; }
+
+.quick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.quick {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  color: #e94560;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.quick:hover { background: #0f3460; transform: scale(1.05); }
+
+.roll-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #e94560, #c0392b);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+  letter-spacing: 1px;
+}
+
+.roll-btn:hover { opacity: 0.9; transform: scale(1.02); }
+.roll-btn:active { transform: scale(0.98); }
+
+/* Result section */
+.result-section {
+  background: #16213e;
+  border: 1px solid #e94560;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.result-section.flash {
+  animation: flash 0.4s ease-out;
+}
+
+@keyframes flash {
+  0% { background: #e94560; }
+  100% { background: #16213e; }
+}
+
+.result-expr { font-size: 12px; color: #aaa; margin-bottom: 4px; }
+.result-total { font-size: 48px; font-weight: 700; color: #e94560; line-height: 1; }
+.result-detail { font-size: 12px; color: #666; margin-top: 4px; font-family: monospace; }
+
+/* History section */
+.history-section { margin-top: 8px; }
+
+h2 {
+  font-size: 13px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.history-list {
+  list-style: none;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 60px 40px 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid #222;
+  font-size: 12px;
+}
+
+.h-expr { color: #e94560; font-family: monospace; font-weight: 600; }
+.h-total { font-size: 18px; font-weight: 700; color: #fff; }
+.h-detail { color: #666; font-family: monospace; font-size: 11px; }
+.h-time { color: #444; font-size: 10px; text-align: right; }
+
+.empty-history { color: #444; font-style: italic; padding: 8px; text-align: center; }
+
+.clear-btn {
+  background: transparent;
+  border: 1px solid #333;
+  color: #666;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.clear-btn:hover { color: #e94560; border-color: #e94560; }
+
+.status-msg {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #e94560;
+  min-height: 16px;
+  text-align: center;
+}
+
+/* Main stage styles */
+.main-stage-body {
+  background: #0d0d1a;
+  min-height: 100vh;
+  padding: 0;
+}
+
+#stage-app {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.stage-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #222;
+}
+
+.stage-header h1 { font-size: 28px; color: #fff; }
+
+.stage-subtitle {
+  font-size: 13px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.latest-roll {
+  background: #16213e;
+  border: 2px solid #e94560;
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  animation: flash 0.5s ease-out;
+}
+
+.latest-label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+.latest-who { font-size: 14px; color: #e94560; margin: 4px 0; font-weight: 600; }
+.latest-expr { font-size: 14px; color: #aaa; font-family: monospace; }
+.latest-total { font-size: 80px; font-weight: 700; color: #e94560; line-height: 1; }
+.latest-detail { font-size: 14px; color: #666; font-family: monospace; margin-top: 4px; }
+
+.stage-history h2 { font-size: 14px; color: #aaa; margin-bottom: 12px; }
+
+.stage-list .history-item {
+  grid-template-columns: 60px 50px 1fr 120px auto;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
+.h-who { color: #aaa; font-style: italic; }
