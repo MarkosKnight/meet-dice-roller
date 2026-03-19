@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dice Roller</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/meetjs/addons/1.1.0/meet.addons.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <span class="dice-icon">&#127922;</span>
+      <h1>Dice Roller</h1>
+    </header>
+
+    <section class="roll-section">
+      <label for="diceExpr">Dice expression</label>
+      <input type="text" id="diceExpr" value="1d20" placeholder="e.g. 2d6+3, 1d20, 4d4-1" autocomplete="off" />
+      <p class="hint">Format: <strong>NdS&plusmn;M</strong> &mdash; N dice, S sides, &plusmn;M modifier</p>
+
+      <div class="quick-buttons">
+        <button class="quick" data-expr="1d4">d4</button>
+        <button class="quick" data-expr="1d6">d6</button>
+        <button class="quick" data-expr="1d8">d8</button>
+        <button class="quick" data-expr="1d10">d10</button>
+        <button class="quick" data-expr="1d12">d12</button>
+        <button class="quick" data-expr="1d20">d20</button>
+        <button class="quick" data-expr="1d100">d100</button>
+        <button class="quick" data-expr="2d6">2d6</button>
+      </div>
+
+      <button id="rollBtn" class="roll-btn">Roll!</button>
+    </section>
+
+    <section class="result-section" id="resultSection" hidden>
+      <div class="result-box">
+        <div class="result-expr" id="resultExpr"></div>
+        <div class="result-total" id="resultTotal"></div>
+        <div class="result-detail" id="resultDetail"></div>
+      </div>
+    </section>
+
+    <section class="history-section">
+      <h2>Roll History</h2>
+      <ul id="historyList" class="history-list"></ul>
+      <button id="clearBtn" class="clear-btn">Clear History</button>
+    </section>
+
+    <div id="statusMsg" class="status-msg"></div>
+  </div>
+
+  <script src="dice.js"></script>
+  <script src="side-panel.js"></script>
+</body>
+</html>
