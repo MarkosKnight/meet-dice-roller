@@ -4,7 +4,7 @@
  * Replace CLOUD_PROJECT_NUMBER and MAIN_STAGE_URL before deploying.
  */
 
-const CLOUD_PROJECT_NUMBER = 'YOUR_CLOUD_PROJECT_NUMBER';
+const CLOUD_PROJECT_NUMBER = '183167958875';
 const MAIN_STAGE_URL = 'https://markosknight.github.io/meet-dice-roller/main-stage.html';
 
 let sidePanelClient = null;
