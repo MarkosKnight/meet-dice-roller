@@ -238,3 +238,30 @@ h2 {
 }
 
 .h-who { color: #aaa; font-style: italic; }
+
+
+.launch-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px;
+  background: transparent;
+  border: 1px solid #e94560;
+  color: #e94560;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.launch-btn:hover {
+  background: #e94560;
+  color: #fff;
+}
+
+.launch-btn:disabled {
+  background: #333;
+  border-color: #555;
+  color: #555;
+  cursor: default;
+}
