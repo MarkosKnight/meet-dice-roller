@@ -43,3 +43,51 @@ function formatRollDetail(result) {
 function formatTime() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  var rollBtn = document.getElementById('rollBtn');
+  var diceInput = document.getElementById('diceExpr');
+  var resultSection = document.getElementById('resultSection');
+  var resultExpr = document.getElementById('resultExpr');
+  var resultTotal = document.getElementById('resultTotal');
+  var resultDetail = document.getElementById('resultDetail');
+  var historyList = document.getElementById('historyList');
+  var clearBtn = document.getElementById('clearBtn');
+
+  function doRoll(exprStr) {
+    var parsed = parseDiceExpr(exprStr);
+    if (!parsed) { alert('Invalid: ' + exprStr); return; }
+    var result = rollDice(parsed);
+    var detail = formatRollDetail(result);
+    if (resultExpr) resultExpr.textContent = result.expr;
+    if (resultTotal) resultTotal.textContent = result.total;
+    if (resultDetail) resultDetail.textContent = detail;
+    if (resultSection) resultSection.hidden = false;
+    if (historyList) {
+      var li = document.createElement('li');
+      li.textContent = '[' + formatTime() + '] ' + result.expr + ' -> ' + result.total + ' ' + detail;
+      historyList.insertBefore(li, historyList.firstChild);
+    }
+    if (typeof window.onDiceRolled === 'function') {
+      window.onDiceRolled(result.expr, result.total, detail);
+    }
+  }
+
+  if (rollBtn) {
+    rollBtn.addEventListener('click', function() {
+      doRoll(diceInput ? diceInput.value.trim() : '1d20');
+    });
+  }
+  document.querySelectorAll('.quick').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var expr = btn.dataset.expr;
+      if (diceInput) diceInput.value = expr;
+      doRoll(expr);
+    });
+  });
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      if (historyList) historyList.innerHTML = '';
+    });
+  }
+});
