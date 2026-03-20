@@ -1,7 +1,7 @@
 /**
  * side-panel.js
  * Meet add-on side panel: handles UI, dice rolls, and broadcasting to main stage.
- * Replace CLOUD_PROJECT_NUMBER and MAIN_STAGE_URL before deploying.
+ * Fixed: startActivity() is called only once; all subsequent rolls use sendMessage() only.
  */
 
 const CLOUD_PROJECT_NUMBER = '183167958875';
@@ -10,6 +10,7 @@ const MAIN_STAGE_URL = 'https://markosknight.github.io/meet-dice-roller/main-sta
 let sidePanelClient = null;
 let rollHistory = [];
 let displayName = 'Someone';
+let activityStarted = false;  // track whether the main stage is already open
 
 (async function init() {
   try {
@@ -46,6 +47,8 @@ function setupUI() {
     rollHistory = [];
     renderHistory();
   });
+  // Launch shared panel button - opens main stage once, manually
+  document.getElementById('launchBtn').addEventListener('click', launchMainStage);
 }
 
 async function handleRoll() {
@@ -63,8 +66,40 @@ async function handleRoll() {
   rollHistory.unshift(entry);
   if (rollHistory.length > 30) rollHistory.pop();
   renderHistory();
-  await broadcastRoll(entry);
+  // Only send message - never call startActivity() here
+  await sendRollMessage(entry);
   setStatus('');
+}
+
+async function launchMainStage() {
+  if (!sidePanelClient) return;
+  if (activityStarted) {
+    setStatus('Shared panel is already open.');
+    return;
+  }
+  try {
+    await sidePanelClient.startActivity({ mainStageUrl: MAIN_STAGE_URL });
+    activityStarted = true;
+    document.getElementById('launchBtn').textContent = 'Shared Panel Open';
+    document.getElementById('launchBtn').disabled = true;
+    setStatus('Shared panel launched!');
+  } catch (err) {
+    // If error says activity already running, mark it as started
+    activityStarted = true;
+    document.getElementById('launchBtn').textContent = 'Shared Panel Open';
+    document.getElementById('launchBtn').disabled = true;
+    setStatus('');
+    console.warn('startActivity error (may already be running):', err);
+  }
+}
+
+async function sendRollMessage(entry) {
+  if (!sidePanelClient) return;
+  try {
+    await sidePanelClient.sendMessage(JSON.stringify(entry));
+  } catch (err) {
+    console.warn('sendMessage failed:', err);
+  }
 }
 
 function showResult(result, detail) {
@@ -95,18 +130,6 @@ function renderHistory() {
       '<span class="h-time">' + entry.time + '</span>';
     list.appendChild(li);
   });
-}
-
-async function broadcastRoll(entry) {
-  if (!sidePanelClient) return;
-  try {
-    await sidePanelClient.startActivity({ mainStageUrl: MAIN_STAGE_URL });
-  } catch (_) {}
-  try {
-    await sidePanelClient.sendMessage(JSON.stringify(entry));
-  } catch (err) {
-    console.warn('sendMessage not available:', err);
-  }
 }
 
 function setStatus(msg) {
