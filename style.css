@@ -265,3 +265,92 @@ h2 {
   color: #555;
   cursor: default;
 }
+
+
+/* Main Stage Roll Feed */
+.main-stage-body {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.stage-header {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #16213e, #0f3460);
+  border-bottom: 2px solid #e94560;
+}
+
+.stage-header h1 {
+  margin: 8px 0 4px;
+  font-size: 28px;
+  color: #fff;
+}
+
+.stage-subtitle {
+  margin: 0;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.meeting-code {
+  margin: 4px 0 0;
+  color: #888;
+  font-size: 12px;
+}
+
+.roll-feed {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+.roll-feed h2 {
+  color: #e94560;
+  border-bottom: 1px solid #333;
+  padding-bottom: 8px;
+}
+
+.roll-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.roll-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: #16213e;
+  border-radius: 8px;
+  border-left: 3px solid #e94560;
+  transition: background 0.3s;
+}
+
+.roll-entry.new-roll {
+  background: #1a3a5c;
+  border-left-color: #ffd700;
+}
+
+.roll-time {
+  font-size: 11px;
+  color: #666;
+  min-width: 60px;
+}
+
+.roll-text {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.empty-msg {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin-top: 40px;
+}
