@@ -1,12 +1,12 @@
 /**
  * side-panel.js
- * Meet add-on side panel: handles UI, dice rolls, and syncs via Firebase Realtime Database.
+ * Hooks into the existing index.html UI and adds Firebase Realtime Database sync.
+ * Works alongside dice.js for rolling logic.
  */
 
 const CLOUD_PROJECT_NUMBER = '183167958875';
 const MAIN_STAGE_URL = 'https://markosknight.github.io/meet-dice-roller/main-stage.html';
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCcydiLjfC48SRKEeaqbgvsOYqlqBDB1Zo",
   authDomain: "meet-dice-roller-4508d.firebaseapp.com",
@@ -18,24 +18,24 @@ const firebaseConfig = {
 };
 
 let sidePanelClient = null;
-let rollHistory = [];
 let displayName = 'Someone';
 let activityStarted = false;
 let meetingId = 'default-room';
-let db = null;
+let fbRef = null;
+let fbPush = null;
 
-// Initialize Firebase
+// Initialize Firebase via dynamic import
 import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js').then(({ initializeApp }) => {
-  import('https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js').then(({ getDatabase, ref, push, onValue }) => {
+  import('https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js').then(({ getDatabase, ref, push }) => {
     const app = initializeApp(firebaseConfig);
-    db = getDatabase(app);
-    window._fbRef = ref;
-    window._fbPush = push;
-    window._fbOnValue = onValue;
-    console.log('Firebase initialized');
+    const db = getDatabase(app);
+    fbRef = (path) => ref(db, path);
+    fbPush = push;
+    console.log('[DiceRoller] Firebase ready');
   });
 });
 
+// Initialize Meet SDK
 (async function init() {
   try {
     const session = await window.meet.addon.createAddonSession({
@@ -50,66 +50,49 @@ import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js').then(({ ini
         meetingId = info.meeting.meetingCode.replace(/-/g, '');
       }
     } catch (e) {
-      console.warn('Could not get meeting info', e);
+      console.warn('[DiceRoller] Could not get meeting info', e);
     }
     sidePanelClient = await session.createSidePanelClient();
-    document.getElementById('display-name').textContent = displayName;
+    console.log('[DiceRoller] Meet SDK ready, room:', meetingId);
   } catch (e) {
-    console.error('Failed to init Meet SDK', e);
+    console.error('[DiceRoller] Failed to init Meet SDK', e);
   }
 })();
 
-function rollDice(sides) {
-  const result = Math.floor(Math.random() * sides) + 1;
-  const rollText = `${displayName} rolled 1d${sides} → ${result}`;
-  addToHistory(rollText);
-
-  // Write to Firebase
-  if (db && window._fbRef && window._fbPush) {
-    const rollsRef = window._fbRef(db, 'rolls/' + meetingId);
-    window._fbPush(rollsRef, {
-      player: displayName,
-      dice: `1d${sides}`,
-      result: result,
-      text: rollText,
-      timestamp: Date.now()
-    }).catch(e => console.warn('Firebase write failed', e));
-  }
+// Push a roll result to Firebase
+function pushRollToFirebase(expr, result, detail) {
+  if (!fbRef || !fbPush) return;
+  const rollText = `${displayName} rolled ${expr} → ${result}${detail ? ' (' + detail + ')' : ''}`;
+  fbPush(fbRef('rolls/' + meetingId), {
+    player: displayName,
+    expr: expr,
+    result: result,
+    text: rollText,
+    timestamp: Date.now()
+  }).catch(e => console.warn('[DiceRoller] Firebase push failed', e));
 }
 
-function addToHistory(text) {
-  rollHistory.unshift(text);
-  if (rollHistory.length > 20) rollHistory.pop();
-  renderHistory();
-}
+// Expose so dice.js can call it after rolling
+window.onDiceRolled = function(expr, total, detail) {
+  pushRollToFirebase(expr, total, detail);
+};
 
-function renderHistory() {
-  const list = document.getElementById('roll-history');
-  list.innerHTML = rollHistory.map(r => `<li>${r}</li>`).join('');
-}
-
+// Launch button handler
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.roll-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const sides = parseInt(btn.dataset.sides);
-      rollDice(sides);
-    });
-  });
-
-  const launchBtn = document.getElementById('launch-btn');
+  const launchBtn = document.getElementById('launchBtn');
   if (launchBtn) {
     launchBtn.addEventListener('click', async () => {
       if (!activityStarted && sidePanelClient) {
         activityStarted = true;
         launchBtn.disabled = true;
-        launchBtn.textContent = 'Shared Panel Open';
+        launchBtn.textContent = '✅ Shared Panel Open';
         try {
           await sidePanelClient.startActivity({ main_stage_url: MAIN_STAGE_URL });
         } catch (e) {
-          console.error('startActivity failed', e);
+          console.error('[DiceRoller] startActivity failed', e);
           activityStarted = false;
           launchBtn.disabled = false;
-          launchBtn.textContent = 'Open Shared Panel';
+          launchBtn.textContent = '🗺 Open Shared Panel';
         }
       }
     });
