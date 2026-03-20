@@ -1,16 +1,40 @@
 /**
  * side-panel.js
- * Meet add-on side panel: handles UI, dice rolls, and broadcasting to main stage.
- * Fixed: startActivity() is called only once; all subsequent rolls use sendMessage() only.
+ * Meet add-on side panel: handles UI, dice rolls, and syncs via Firebase Realtime Database.
  */
 
 const CLOUD_PROJECT_NUMBER = '183167958875';
 const MAIN_STAGE_URL = 'https://markosknight.github.io/meet-dice-roller/main-stage.html';
 
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCcydiLjfC48SRKEeaqbgvsOYqlqBDB1Zo",
+  authDomain: "meet-dice-roller-4508d.firebaseapp.com",
+  databaseURL: "https://meet-dice-roller-4508d-default-rtdb.firebaseio.com",
+  projectId: "meet-dice-roller-4508d",
+  storageBucket: "meet-dice-roller-4508d.firebasestorage.app",
+  messagingSenderId: "13711318374",
+  appId: "1:13711318374:web:87e12390c0a81b5a71fca7"
+};
+
 let sidePanelClient = null;
 let rollHistory = [];
 let displayName = 'Someone';
-let activityStarted = false;  // track whether the main stage is already open
+let activityStarted = false;
+let meetingId = 'default-room';
+let db = null;
+
+// Initialize Firebase
+import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js').then(({ initializeApp }) => {
+  import('https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js').then(({ getDatabase, ref, push, onValue }) => {
+    const app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    window._fbRef = ref;
+    window._fbPush = push;
+    window._fbOnValue = onValue;
+    console.log('Firebase initialized');
+  });
+});
 
 (async function init() {
   try {
@@ -22,116 +46,72 @@ let activityStarted = false;  // track whether the main stage is already open
       if (info && info.localParticipant && info.localParticipant.name) {
         displayName = info.localParticipant.name;
       }
-    } catch (_) {}
+      if (info && info.meeting && info.meeting.meetingCode) {
+        meetingId = info.meeting.meetingCode.replace(/-/g, '');
+      }
+    } catch (e) {
+      console.warn('Could not get meeting info', e);
+    }
     sidePanelClient = await session.createSidePanelClient();
-    setStatus('Ready! Enter a dice expression and roll.');
-    setupUI();
-  } catch (err) {
-    console.error('Meet add-on init error:', err);
-    setStatus('Could not connect to Meet SDK.');
+    document.getElementById('display-name').textContent = displayName;
+  } catch (e) {
+    console.error('Failed to init Meet SDK', e);
   }
 })();
 
-function setupUI() {
-  document.getElementById('rollBtn').addEventListener('click', handleRoll);
-  document.getElementById('diceExpr').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleRoll();
-  });
-  document.querySelectorAll('.quick').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.getElementById('diceExpr').value = btn.dataset.expr;
-      handleRoll();
-    });
-  });
-  document.getElementById('clearBtn').addEventListener('click', () => {
-    rollHistory = [];
-    renderHistory();
-  });
-  // Launch shared panel button - opens main stage once, manually
-  document.getElementById('launchBtn').addEventListener('click', launchMainStage);
+function rollDice(sides) {
+  const result = Math.floor(Math.random() * sides) + 1;
+  const rollText = `${displayName} rolled 1d${sides} → ${result}`;
+  addToHistory(rollText);
+
+  // Write to Firebase
+  if (db && window._fbRef && window._fbPush) {
+    const rollsRef = window._fbRef(db, 'rolls/' + meetingId);
+    window._fbPush(rollsRef, {
+      player: displayName,
+      dice: `1d${sides}`,
+      result: result,
+      text: rollText,
+      timestamp: Date.now()
+    }).catch(e => console.warn('Firebase write failed', e));
+  }
 }
 
-async function handleRoll() {
-  const expr = document.getElementById('diceExpr').value.trim();
-  const parsed = parseDiceExpr(expr);
-  if (!parsed) {
-    setStatus('Invalid expression. Try: 2d6+3 or 1d20');
-    return;
-  }
-  const result = rollDice(parsed);
-  const detail = formatRollDetail(result);
-  const time = formatTime();
-  showResult(result, detail);
-  const entry = { who: displayName, expr: result.expr, total: result.total, detail, time };
-  rollHistory.unshift(entry);
-  if (rollHistory.length > 30) rollHistory.pop();
+function addToHistory(text) {
+  rollHistory.unshift(text);
+  if (rollHistory.length > 20) rollHistory.pop();
   renderHistory();
-  // Only send message - never call startActivity() here
-  await sendRollMessage(entry);
-  setStatus('');
-}
-
-async function launchMainStage() {
-  if (!sidePanelClient) return;
-  if (activityStarted) {
-    setStatus('Shared panel is already open.');
-    return;
-  }
-  try {
-    await sidePanelClient.startActivity({ mainStageUrl: MAIN_STAGE_URL });
-    activityStarted = true;
-    document.getElementById('launchBtn').textContent = 'Shared Panel Open';
-    document.getElementById('launchBtn').disabled = true;
-    setStatus('Shared panel launched!');
-  } catch (err) {
-    // If error says activity already running, mark it as started
-    activityStarted = true;
-    document.getElementById('launchBtn').textContent = 'Shared Panel Open';
-    document.getElementById('launchBtn').disabled = true;
-    setStatus('');
-    console.warn('startActivity error (may already be running):', err);
-  }
-}
-
-async function sendRollMessage(entry) {
-  if (!sidePanelClient) return;
-  try {
-    await sidePanelClient.sendMessage(JSON.stringify(entry));
-  } catch (err) {
-    console.warn('sendMessage failed:', err);
-  }
-}
-
-function showResult(result, detail) {
-  const section = document.getElementById('resultSection');
-  document.getElementById('resultExpr').textContent = result.expr;
-  document.getElementById('resultTotal').textContent = result.total;
-  document.getElementById('resultDetail').textContent = detail;
-  section.hidden = false;
-  section.classList.remove('flash');
-  void section.offsetWidth;
-  section.classList.add('flash');
 }
 
 function renderHistory() {
-  const list = document.getElementById('historyList');
-  list.innerHTML = '';
-  if (rollHistory.length === 0) {
-    list.innerHTML = '<li class="empty-history">No rolls yet.</li>';
-    return;
-  }
-  rollHistory.forEach((entry) => {
-    const li = document.createElement('li');
-    li.className = 'history-item';
-    li.innerHTML =
-      '<span class="h-expr">' + entry.expr + '</span>' +
-      '<span class="h-total">' + entry.total + '</span>' +
-      '<span class="h-detail">' + entry.detail + '</span>' +
-      '<span class="h-time">' + entry.time + '</span>';
-    list.appendChild(li);
-  });
+  const list = document.getElementById('roll-history');
+  list.innerHTML = rollHistory.map(r => `<li>${r}</li>`).join('');
 }
 
-function setStatus(msg) {
-  document.getElementById('statusMsg').textContent = msg;
-}
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.roll-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sides = parseInt(btn.dataset.sides);
+      rollDice(sides);
+    });
+  });
+
+  const launchBtn = document.getElementById('launch-btn');
+  if (launchBtn) {
+    launchBtn.addEventListener('click', async () => {
+      if (!activityStarted && sidePanelClient) {
+        activityStarted = true;
+        launchBtn.disabled = true;
+        launchBtn.textContent = 'Shared Panel Open';
+        try {
+          await sidePanelClient.startActivity({ main_stage_url: MAIN_STAGE_URL });
+        } catch (e) {
+          console.error('startActivity failed', e);
+          activityStarted = false;
+          launchBtn.disabled = false;
+          launchBtn.textContent = 'Open Shared Panel';
+        }
+      }
+    });
+  }
+});
