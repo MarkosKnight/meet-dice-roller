@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dice Roller - Main Stage</title>
+  <title>Dice Roller - Shared Stage</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/meetjs/addons/1.1.0/meet.addons.js"></script>
 </head>
@@ -13,25 +13,16 @@
       <span class="dice-icon">&#127922;</span>
       <h1>Dice Roller</h1>
       <p class="stage-subtitle">Shared Roll Log &mdash; visible to all participants</p>
+      <p class="meeting-code">Room: <span id="meeting-id">connecting...</span></p>
     </header>
 
-    <div id="latestRoll" class="latest-roll" hidden>
-      <div class="latest-label">Latest Roll</div>
-      <div class="latest-who" id="latestWho"></div>
-      <div class="latest-expr" id="latestExpr"></div>
-      <div class="latest-total" id="latestTotal"></div>
-      <div class="latest-detail" id="latestDetail"></div>
+    <div class="roll-feed">
+      <h2>Roll History</h2>
+      <ul id="roll-list" class="roll-list"></ul>
+      <p id="empty-msg" class="empty-msg">Waiting for rolls... Roll dice in your side panel!</p>
     </div>
-
-    <section class="stage-history">
-      <h2>Roll Log</h2>
-      <ul id="stageHistoryList" class="history-list stage-list">
-        <li class="empty-history">No rolls yet. Open the side panel to roll!</li>
-      </ul>
-    </section>
   </div>
 
-  <script src="dice.js"></script>
-  <script src="main-stage.js"></script>
+  <script type="module" src="main-stage.js"></script>
 </body>
 </html>
