@@ -18,7 +18,6 @@
       <label for="diceExpr">Dice expression</label>
       <input type="text" id="diceExpr" value="1d20" placeholder="e.g. 2d6+3, 1d20, 4d4-1" autocomplete="off" />
       <p class="hint">Format: <strong>NdS&plusmn;M</strong> &mdash; N dice, S sides, &plusmn;M modifier</p>
-
       <div class="quick-buttons">
         <button class="quick" data-expr="1d4">d4</button>
         <button class="quick" data-expr="1d6">d6</button>
@@ -29,10 +28,7 @@
         <button class="quick" data-expr="1d100">d100</button>
         <button class="quick" data-expr="2d6">2d6</button>
       </div>
-
       <button id="rollBtn" class="roll-btn">Roll!</button>
-
-      <button id="launchBtn" class="launch-btn">&#128506; Open Shared Panel</button>
     </section>
 
     <section class="result-section" id="resultSection" hidden>
@@ -43,8 +39,16 @@
       </div>
     </section>
 
+    <section class="shared-section">
+      <h2>&#127760; Shared Rolls <span class="live-dot"></span></h2>
+      <p class="shared-hint">Live feed &mdash; all participants</p>
+      <ul id="sharedList" class="shared-list">
+        <li class="shared-empty" id="sharedEmpty">Waiting for rolls...</li>
+      </ul>
+    </section>
+
     <section class="history-section">
-      <h2>Roll History</h2>
+      <h2>My Roll History</h2>
       <ul id="historyList" class="history-list"></ul>
       <button id="clearBtn" class="clear-btn">Clear History</button>
     </section>
