@@ -1,7 +1,6 @@
 /**
  * side-panel.js
- * Hooks into the existing index.html UI and adds Firebase Realtime Database sync.
- * Works alongside dice.js for rolling logic.
+ * Hooks into index.html UI, adds Firebase sync, and opens shared stage.
  */
 
 const CLOUD_PROJECT_NUMBER = '183167958875';
@@ -19,82 +18,77 @@ const firebaseConfig = {
 
 let sidePanelClient = null;
 let displayName = 'Someone';
-let activityStarted = false;
 let meetingId = 'default-room';
 let fbRef = null;
 let fbPush = null;
 
-// Initialize Firebase via dynamic import
-import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js').then(({ initializeApp }) => {
-  import('https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js').then(({ getDatabase, ref, push }) => {
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    fbRef = (path) => ref(db, path);
-    fbPush = push;
+// Init Firebase
+import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js').then(function(m) {
+  import('https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js').then(function(db) {
+    var app = m.initializeApp(firebaseConfig);
+    var database = db.getDatabase(app);
+    fbRef = function(path) { return db.ref(database, path); };
+    fbPush = db.push;
     console.log('[DiceRoller] Firebase ready');
   });
 });
 
-// Initialize Meet SDK
+// Init Meet SDK
 (async function init() {
   try {
-    const session = await window.meet.addon.createAddonSession({
-      cloudProjectNumber: CLOUD_PROJECT_NUMBER,
+    var session = await window.meet.addon.createAddonSession({
+      cloudProjectNumber: CLOUD_PROJECT_NUMBER
     });
     try {
-      const info = await session.getMeetingInfo();
+      var info = await session.getMeetingInfo();
       if (info && info.localParticipant && info.localParticipant.name) {
         displayName = info.localParticipant.name;
       }
       if (info && info.meeting && info.meeting.meetingCode) {
         meetingId = info.meeting.meetingCode.replace(/-/g, '');
       }
-    } catch (e) {
-      console.warn('[DiceRoller] Could not get meeting info', e);
+    } catch(e) {
+      console.warn('[DiceRoller] getMeetingInfo failed', e);
     }
     sidePanelClient = await session.createSidePanelClient();
     console.log('[DiceRoller] Meet SDK ready, room:', meetingId);
-  } catch (e) {
-    console.error('[DiceRoller] Failed to init Meet SDK', e);
+  } catch(e) {
+    console.error('[DiceRoller] Meet SDK init failed', e);
   }
 })();
 
-// Push a roll result to Firebase
-function pushRollToFirebase(expr, result, detail) {
+// Push roll to Firebase
+window.onDiceRolled = function(expr, total, detail) {
   if (!fbRef || !fbPush) return;
-  const rollText = `${displayName} rolled ${expr} → ${result}${detail ? ' (' + detail + ')' : ''}`;
+  var rollText = displayName + ' rolled ' + expr + ' -> ' + total + (detail ? ' ' + detail : '');
   fbPush(fbRef('rolls/' + meetingId), {
     player: displayName,
     expr: expr,
-    result: result,
+    result: total,
     text: rollText,
     timestamp: Date.now()
-  }).catch(e => console.warn('[DiceRoller] Firebase push failed', e));
-}
-
-// Expose so dice.js can call it after rolling
-window.onDiceRolled = function(expr, total, detail) {
-  pushRollToFirebase(expr, total, detail);
+  }).catch(function(e) { console.warn('[DiceRoller] Firebase push failed', e); });
 };
 
-// Launch button handler
-document.addEventListener('DOMContentLoaded', () => {
-  const launchBtn = document.getElementById('launchBtn');
-  if (launchBtn) {
-    launchBtn.addEventListener('click', async () => {
-      if (!activityStarted && sidePanelClient) {
-        activityStarted = true;
-        launchBtn.disabled = true;
-        launchBtn.textContent = '✅ Shared Panel Open';
-        try {
-          await sidePanelClient.startActivity({ main_stage_url: MAIN_STAGE_URL });
-        } catch (e) {
-          console.error('[DiceRoller] startActivity failed', e);
-          activityStarted = false;
-          launchBtn.disabled = false;
-          launchBtn.textContent = '🗺 Open Shared Panel';
-        }
-      }
-    });
-  }
+// Launch button: open shared stage in new tab + try Meet activity
+document.addEventListener('DOMContentLoaded', function() {
+  var launchBtn = document.getElementById('launchBtn');
+  if (!launchBtn) return;
+
+  launchBtn.addEventListener('click', function() {
+    // Always open in a new browser tab so it works with 1 or more participants
+    window.open(MAIN_STAGE_URL, '_blank');
+
+    // Also try to start the Meet main-stage activity (works with 2+ participants)
+    if (sidePanelClient) {
+      sidePanelClient.startActivity({ main_stage_url: MAIN_STAGE_URL })
+        .then(function() {
+          launchBtn.textContent = 'Shared Panel Open';
+          console.log('[DiceRoller] startActivity succeeded');
+        })
+        .catch(function(e) {
+          console.warn('[DiceRoller] startActivity failed (solo call):', e.message);
+        });
+    }
+  });
 });
