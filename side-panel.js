@@ -129,7 +129,7 @@ window.onDiceRolled = function(expr, total, detail) {
   });
 };
 
-// Launch button: start Meet main-stage activity (shows shared panel inside Meet)
+// Launch button: start Meet main-stage activity
 document.addEventListener('DOMContentLoaded', function() {
   updateLaunchBtn();
 
@@ -147,7 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     launchBtn.disabled = true;
     launchBtn.textContent = 'Opening...';
-    sidePanelClient.startActivity({ main_stage_url: MAIN_STAGE_URL })
+    // Use camelCase mainStageUrl as required by the Meet Add-ons SDK
+    sidePanelClient.startActivity({ mainStageUrl: MAIN_STAGE_URL })
       .then(function() {
         launchBtn.textContent = '\u2705 Shared Stage Open';
         console.log('[DiceRoller] startActivity succeeded');
