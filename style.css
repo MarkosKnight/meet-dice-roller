@@ -1,5 +1,4 @@
 /* style.css - Shared styles for Meet Dice Roller add-on */
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -57,15 +56,9 @@ input[type=text] {
   outline: none;
   transition: border-color 0.2s;
 }
-
 input[type=text]:focus { border-color: #e94560; }
 
-.hint {
-  font-size: 11px;
-  color: #666;
-  margin-bottom: 10px;
-}
-
+.hint { font-size: 11px; color: #666; margin-bottom: 10px; }
 .hint strong { color: #e94560; }
 
 .quick-buttons {
@@ -86,7 +79,6 @@ input[type=text]:focus { border-color: #e94560; }
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
 }
-
 .quick:hover { background: #0f3460; transform: scale(1.05); }
 
 .roll-btn {
@@ -102,7 +94,6 @@ input[type=text]:focus { border-color: #e94560; }
   transition: transform 0.1s, opacity 0.2s;
   letter-spacing: 1px;
 }
-
 .roll-btn:hover { opacity: 0.9; transform: scale(1.02); }
 .roll-btn:active { transform: scale(0.98); }
 
@@ -116,16 +107,11 @@ input[type=text]:focus { border-color: #e94560; }
   text-align: center;
   transition: all 0.3s;
 }
-
-.result-section.flash {
-  animation: flash 0.4s ease-out;
-}
-
+.result-section.flash { animation: flash 0.4s ease-out; }
 @keyframes flash {
   0% { background: #e94560; }
   100% { background: #16213e; }
 }
-
 .result-expr { font-size: 12px; color: #aaa; margin-bottom: 4px; }
 .result-total { font-size: 48px; font-weight: 700; color: #e94560; line-height: 1; }
 .result-detail { font-size: 12px; color: #666; margin-top: 4px; font-family: monospace; }
@@ -162,7 +148,6 @@ h2 {
 .h-total { font-size: 18px; font-weight: 700; color: #fff; }
 .h-detail { color: #666; font-family: monospace; font-size: 11px; }
 .h-time { color: #444; font-size: 10px; text-align: right; }
-
 .empty-history { color: #444; font-style: italic; padding: 8px; text-align: center; }
 
 .clear-btn {
@@ -174,7 +159,6 @@ h2 {
   font-size: 11px;
   cursor: pointer;
 }
-
 .clear-btn:hover { color: #e94560; border-color: #e94560; }
 
 .status-msg {
@@ -187,9 +171,12 @@ h2 {
 
 /* Main stage styles */
 .main-stage-body {
-  background: #0d0d1a;
-  min-height: 100vh;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
   padding: 0;
+  min-height: 100vh;
 }
 
 #stage-app {
@@ -200,45 +187,98 @@ h2 {
 
 .stage-header {
   text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #16213e, #0f3460);
+  border-bottom: 2px solid #e94560;
   margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #222;
 }
+.stage-header h1 { margin: 8px 0 4px; font-size: 28px; color: #fff; }
+.stage-subtitle { margin: 0; color: #aaa; font-size: 14px; }
+.meeting-code { margin: 4px 0 0; color: #888; font-size: 12px; }
 
-.stage-header h1 { font-size: 28px; color: #fff; }
-
-.stage-subtitle {
-  font-size: 13px;
-  color: #666;
-  margin-top: 4px;
-}
-
+/* Latest roll box - doubled size, full red border */
 .latest-roll {
   background: #16213e;
-  border: 2px solid #e94560;
-  border-radius: 14px;
-  padding: 24px;
+  border: 6px solid #e94560;
+  border-radius: 18px;
+  padding: 48px;
   text-align: center;
   margin-bottom: 24px;
   animation: flash 0.5s ease-out;
+  box-shadow: 0 0 32px rgba(233, 69, 96, 0.4);
+}
+.latest-label {
+  font-size: 22px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.latest-who {
+  font-size: 28px;
+  color: #e94560;
+  margin: 8px 0;
+  font-weight: 600;
+}
+.latest-expr {
+  font-size: 28px;
+  color: #aaa;
+  font-family: monospace;
+}
+.latest-total {
+  font-size: 160px;
+  font-weight: 700;
+  color: #e94560;
+  line-height: 1;
+}
+.latest-detail {
+  font-size: 28px;
+  color: #888;
+  font-family: monospace;
+  margin-top: 8px;
 }
 
-.latest-label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-.latest-who { font-size: 14px; color: #e94560; margin: 4px 0; font-weight: 600; }
-.latest-expr { font-size: 14px; color: #aaa; font-family: monospace; }
-.latest-total { font-size: 80px; font-weight: 700; color: #e94560; line-height: 1; }
-.latest-detail { font-size: 14px; color: #666; font-family: monospace; margin-top: 4px; }
+/* Roll feed */
+.roll-feed {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+.roll-feed h2 { color: #e94560; border-bottom: 1px solid #333; padding-bottom: 8px; }
+
+.roll-list { list-style: none; padding: 0; margin: 0; }
+
+.roll-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: #16213e;
+  border-radius: 8px;
+  border-left: 3px solid #e94560;
+  transition: background 0.3s;
+}
+.roll-entry.new-roll {
+  background: #1a3a5c;
+  border-left-color: #ffd700;
+}
+.roll-time { font-size: 11px; color: #666; min-width: 60px; }
+.roll-text { font-size: 15px; font-weight: 500; }
+
+.empty-msg {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin-top: 40px;
+}
 
 .stage-history h2 { font-size: 14px; color: #aaa; margin-bottom: 12px; }
-
 .stage-list .history-item {
   grid-template-columns: 60px 50px 1fr 120px auto;
   font-size: 14px;
   padding: 10px 12px;
 }
-
 .h-who { color: #aaa; font-style: italic; }
-
 
 .launch-btn {
   width: 100%;
@@ -253,118 +293,12 @@ h2 {
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
-
-.launch-btn:hover {
-  background: #e94560;
-  color: #fff;
-}
-
-.launch-btn:disabled {
-  background: #333;
-  border-color: #555;
-  color: #555;
-  cursor: default;
-}
-
-
-/* Main Stage Roll Feed */
-.main-stage-body {
-  background: #1a1a2e;
-  color: #e0e0e0;
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-}
-
-.stage-header {
-  text-align: center;
-  padding: 20px;
-  background: linear-gradient(135deg, #16213e, #0f3460);
-  border-bottom: 2px solid #e94560;
-}
-
-.stage-header h1 {
-  margin: 8px 0 4px;
-  font-size: 28px;
-  color: #fff;
-}
-
-.stage-subtitle {
-  margin: 0;
-  color: #aaa;
-  font-size: 14px;
-}
-
-.meeting-code {
-  margin: 4px 0 0;
-  color: #888;
-  font-size: 12px;
-}
-
-.roll-feed {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 0 20px;
-}
-
-.roll-feed h2 {
-  color: #e94560;
-  border-bottom: 1px solid #333;
-  padding-bottom: 8px;
-}
-
-.roll-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.roll-entry {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  margin-bottom: 8px;
-  background: #16213e;
-  border-radius: 8px;
-  border-left: 3px solid #e94560;
-  transition: background 0.3s;
-}
-
-.roll-entry.new-roll {
-  background: #1a3a5c;
-  border-left-color: #ffd700;
-}
-
-.roll-time {
-  font-size: 11px;
-  color: #666;
-  min-width: 60px;
-}
-
-.roll-text {
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.empty-msg {
-  text-align: center;
-  color: #666;
-  font-style: italic;
-  margin-top: 40px;
-}
-
+.launch-btn:hover { background: #e94560; color: #fff; }
+.launch-btn:disabled { background: #333; border-color: #555; color: #555; cursor: default; }
 
 /* Shared Rolls section in side panel */
-.shared-section {
-  margin-bottom: 16px;
-}
-.shared-hint {
-  font-size: 11px;
-  color: #666;
-  margin-bottom: 8px;
-}
+.shared-section { margin-bottom: 16px; }
+.shared-hint { font-size: 11px; color: #666; margin-bottom: 8px; }
 .shared-list {
   list-style: none;
   max-height: 200px;
@@ -387,20 +321,10 @@ h2 {
   font-size: 12px;
   transition: background 0.3s;
 }
-.shared-entry.new-roll {
-  background: #1a3a5c;
-}
-.s-time {
-  color: #555;
-  font-size: 10px;
-  min-width: 38px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.s-text {
-  color: #d0d0d0;
-  word-break: break-word;
-}
+.shared-entry.new-roll { background: #1a3a5c; }
+.s-time { color: #555; font-size: 10px; min-width: 38px; flex-shrink: 0; margin-top: 2px; }
+.s-text { color: #d0d0d0; word-break: break-word; }
+
 .live-dot {
   display: inline-block;
   width: 7px;
