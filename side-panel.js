@@ -23,6 +23,7 @@ let fbRef = null;
 let fbPush = null;
 let fbOnChildAdded = null;
 let listeningStarted = false;
+let meetReady = false;
 
 // Init Firebase and start listening for shared rolls
 Promise.all([
@@ -45,7 +46,6 @@ Promise.all([
 function startListening() {
   if (listeningStarted || !fbRef || !fbOnChildAdded) return;
   listeningStarted = true;
-  // Listen for new rolls from all participants
   var rollsRef = fbRef('rolls/' + meetingId);
   fbOnChildAdded(rollsRef, function(snapshot) {
     var data = snapshot.val();
@@ -53,7 +53,7 @@ function startListening() {
       addSharedEntry(data.text, data.timestamp);
     }
   });
-  console.log('[DiceRoller] Listening for rolls on:', meetingId);
+  console.log('[DiceRoller] Listening on:', meetingId);
 }
 
 function addSharedEntry(text, timestamp) {
@@ -82,9 +82,9 @@ function addSharedEntry(text, timestamp) {
         displayName = info.localParticipant.name;
       }
       if (info && info.meeting && info.meeting.meetingCode) {
-        var newMeetingId = info.meeting.meetingCode.replace(/-/g, '');
-        if (newMeetingId !== meetingId) {
-          meetingId = newMeetingId;
+        var newId = info.meeting.meetingCode.replace(/-/g, '');
+        if (newId !== meetingId) {
+          meetingId = newId;
           listeningStarted = false;
           startListening();
         }
@@ -93,16 +93,31 @@ function addSharedEntry(text, timestamp) {
       console.warn('[DiceRoller] getMeetingInfo failed', e);
     }
     sidePanelClient = await session.createSidePanelClient();
+    meetReady = true;
+    updateLaunchBtn();
     console.log('[DiceRoller] Meet SDK ready, room:', meetingId);
   } catch(e) {
     console.warn('[DiceRoller] Meet SDK init failed (normal outside Meet)', e);
   }
 })();
 
+function updateLaunchBtn() {
+  var btn = document.getElementById('launchBtn');
+  if (!btn) return;
+  if (meetReady) {
+    btn.disabled = false;
+    btn.title = 'Open the shared dice stage for all participants';
+  } else {
+    btn.disabled = true;
+    btn.title = 'Only available inside Google Meet';
+    btn.textContent = '\uD83D\uDCCB Open Shared Stage (Meet only)';
+  }
+}
+
 // Called by dice.js after every roll
 window.onDiceRolled = function(expr, total, detail) {
   if (!fbRef || !fbPush) return;
-  var rollText = displayName + ' rolled ' + expr + ' -> ' + total + (detail ? ' ' + detail : '');
+  var rollText = displayName + ' rolled ' + expr + ' \u2192 ' + total + (detail ? ' ' + detail : '');
   fbPush(fbRef('rolls/' + meetingId), {
     player: displayName,
     expr: expr,
@@ -114,24 +129,42 @@ window.onDiceRolled = function(expr, total, detail) {
   });
 };
 
-// Launch button: open shared stage
+// Launch button: start Meet main-stage activity (shows shared panel inside Meet)
 document.addEventListener('DOMContentLoaded', function() {
+  updateLaunchBtn();
+
   var launchBtn = document.getElementById('launchBtn');
   if (!launchBtn) return;
+
   launchBtn.addEventListener('click', function() {
-    // Open in a new tab - works for solo and group use
-    window.open(MAIN_STAGE_URL, '_blank');
-    launchBtn.textContent = 'Shared Panel Opened';
-    setTimeout(function() { launchBtn.textContent = '\u{1F4CB} Open Shared Panel'; }, 3000);
-    // Also try Meet main-stage activity for 2+ participants
-    if (sidePanelClient) {
-      sidePanelClient.startActivity({ main_stage_url: MAIN_STAGE_URL })
-        .then(function() {
-          console.log('[DiceRoller] startActivity succeeded');
-        })
-        .catch(function(e) {
-          console.warn('[DiceRoller] startActivity failed:', e.message);
-        });
+    if (!sidePanelClient) {
+      var msg = document.getElementById('statusMsg');
+      if (msg) {
+        msg.textContent = 'Open this add-on inside Google Meet to use the shared stage.';
+        setTimeout(function() { msg.textContent = ''; }, 4000);
+      }
+      return;
     }
+    launchBtn.disabled = true;
+    launchBtn.textContent = 'Opening...';
+    sidePanelClient.startActivity({ main_stage_url: MAIN_STAGE_URL })
+      .then(function() {
+        launchBtn.textContent = '\u2705 Shared Stage Open';
+        console.log('[DiceRoller] startActivity succeeded');
+        setTimeout(function() {
+          launchBtn.disabled = false;
+          launchBtn.textContent = '\uD83D\uDCCB Open Shared Stage';
+        }, 5000);
+      })
+      .catch(function(e) {
+        console.warn('[DiceRoller] startActivity failed:', e.message);
+        launchBtn.disabled = false;
+        launchBtn.textContent = '\uD83D\uDCCB Open Shared Stage';
+        var msg = document.getElementById('statusMsg');
+        if (msg) {
+          msg.textContent = 'Could not open shared stage: ' + e.message;
+          setTimeout(function() { msg.textContent = ''; }, 5000);
+        }
+      });
   });
 });
