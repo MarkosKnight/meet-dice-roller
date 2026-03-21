@@ -354,3 +354,64 @@ h2 {
   font-style: italic;
   margin-top: 40px;
 }
+
+
+/* Shared Rolls section in side panel */
+.shared-section {
+  margin-bottom: 16px;
+}
+.shared-hint {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 8px;
+}
+.shared-list {
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+.shared-empty {
+  color: #444;
+  font-style: italic;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+}
+.shared-entry {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 8px;
+  border-bottom: 1px solid #222;
+  font-size: 12px;
+  transition: background 0.3s;
+}
+.shared-entry.new-roll {
+  background: #1a3a5c;
+}
+.s-time {
+  color: #555;
+  font-size: 10px;
+  min-width: 38px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.s-text {
+  color: #d0d0d0;
+  word-break: break-word;
+}
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: #4caf50;
+  border-radius: 50%;
+  margin-left: 4px;
+  animation: pulse 1.5s infinite;
+  vertical-align: middle;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
