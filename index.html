@@ -17,7 +17,7 @@
     <section class="roll-section">
       <label for="diceExpr">Dice expression</label>
       <input type="text" id="diceExpr" value="1d20" placeholder="e.g. 2d6+3, 1d20, 4d4-1" autocomplete="off" />
-      <p class="hint">Format: <strong>NdS&plusmn;M</strong> &mdash; N dice, S sides, &plusmn;M modifier</p>
+      <p class="hint">Format: <strong>Nd&plusmn;M&lt;/strong&gt; &mdash; N dice, S sides, &plusmn;M modifier</p>
       <div class="quick-buttons">
         <button class="quick" data-expr="1d4">d4</button>
         <button class="quick" data-expr="1d6">d6</button>
@@ -45,6 +45,7 @@
       <ul id="sharedList" class="shared-list">
         <li class="shared-empty" id="sharedEmpty">Waiting for rolls...</li>
       </ul>
+      <button id="launchBtn" class="launch-btn">&#128203; Open Shared Panel</button>
     </section>
 
     <section class="history-section">
